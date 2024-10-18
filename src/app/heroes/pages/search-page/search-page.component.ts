@@ -11,6 +11,7 @@ import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 })
 export class SearchPageComponent {
 
+  // SE PUEDE DECIR QUE ESTO ES UN INPUT REACTIVO QUE SOLO TIENE UN CAMPO
   public searchInput = new FormControl('');
   public heroes: Hero[] = [];
   public selectedHero?: Hero;
