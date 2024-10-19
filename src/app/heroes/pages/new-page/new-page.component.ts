@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { Hero, Publisher } from '../../interfaces/hero.interface';
 import { ActivatedRoute, Router } from '@angular/router';
-import { switchMap } from 'rxjs';
+import { filter, switchMap, tap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../components/confirm-dialog/confirm-dialog.component';
@@ -102,16 +102,34 @@ export class NewPageComponent implements OnInit {
       data: this.heroForm.value,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed()
+      .pipe(
+        // FILTRAMOS RESULTADO POSITIVO
+        filter((result: boolean) => result === true),
+        // SE ELIMINA
+        switchMap(() => this.heroesService.deleteHeroById(this.currentHero.id)),
+        //tap(wasDeleted => console.log({wasDeleted})),
+        // SI SE ELIMINA SE TIENE ESTE WASDELETED Y SE DEJA PASAR
+        filter((wasDeleted: boolean) => wasDeleted),
+      )
+      .subscribe(() => {
+        // ESTO UNICAMENTE SE VA A DISPARAR SI SE ACEPTO ELIMINAR Y FUE DISPARADO
+        //console.log({result})
+        this.router.navigate(['/heroes']);
+    })
       //console.log('The dialog was closed');
       //console.log({result});
-      if(!result) return;
-
-      this.heroesService.deleteHeroById(this.currentHero.id);
-
-      this.router.navigate(['/heroes']);
-
-    });
+      //if(!result) return;
+    // FORMA ANTERIOR DE HACER LO DE ARRIBA
+    //  this.heroesService.deleteHeroById(this.currentHero.id)
+    //    .subscribe(wasDeleted => {
+    //      if(wasDeleted){
+    //        this.router.navigate(['/heroes']);
+    //      }
+    //    })
+    //
+    //});
 
 
   }
