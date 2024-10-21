@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environments } from '../../../environments/environments';
 import { User } from '../interfaces/user.interface';
-import { Observable, pipe, tap } from 'rxjs';
+import { catchError, map, Observable, of, pipe, tap } from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class AuthService {
@@ -27,6 +27,25 @@ export class AuthService {
         tap(user => localStorage.setItem('token', 'gsfshdas.sdfsdfsadgtsdf.sdfasdfgf'))
         // TAMBIEN SE PUEDE AGREGAR UN CATCH ERROR PARA MANEJAR LOS ERRORES
       );
+  }
+
+  checkAuthentication(): Observable<boolean>{
+
+    // SE USA EL OF PORQUE SE REGRESA UN VALOR BOOLEANO DE OBSERVABLE
+    // O TAMBIEN PODEMOS REGRESAR UN BOOLEANO
+    //if(!localStorage.getItem('token')) false;
+    if(!localStorage.getItem('token')) return of(false);
+
+    const token = localStorage.getItem('token');
+
+    return this.http.get<User>(`${this.baseUrl}/users/1`)
+      .pipe(
+        tap(user => this.user = user),
+        // CON LA DOBLE NEGACION ME ASEGURO QUE SEA UN VALOR BOOLEANO LO QUE ESTOY REGRESANDO
+        map(user => !!user),
+        catchError(err => of(false))
+      );
+
   }
 
   logout() {
